@@ -3,31 +3,18 @@ import React, { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { toast } from "sonner";
 import Header from "@/components/Header";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import {
-  Edit2,
-  Trash2,
-  Upload,
-  Image as ImageIcon,
-  Code,
-  Tag,
-  Type,
-} from "lucide-react";
-import { Video, getVideos, uploadVideo, formatViewCount } from "@/services/api";
+import { Upload } from "lucide-react";
+import { Video, getVideos } from "@/services/api";
 import UploadModal from "@/components/UploadModal";
 import EditVideoModal from "@/components/EditVideoModal";
+
+// Import our new tab components
+import VideosTab from "@/components/admin/VideosTab";
+import AppearanceTab from "@/components/admin/AppearanceTab";
+import TrackingTab from "@/components/admin/TrackingTab";
+import CustomCodeTab from "@/components/admin/CustomCodeTab";
 
 const Admin = () => {
   const [videos, setVideos] = useState<Video[]>([]);
@@ -101,17 +88,6 @@ const Admin = () => {
     setIsEditModalOpen(true);
   };
 
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setLogoFile(file);
-      const objectUrl = URL.createObjectURL(file);
-      setLogoUrl(objectUrl);
-      localStorage.setItem("customLogo", objectUrl);
-      toast.success("Logo updated successfully");
-    }
-  };
-
   const saveSiteName = () => {
     localStorage.setItem("siteName", siteName);
     toast.success("Website name saved successfully");
@@ -156,186 +132,40 @@ const Admin = () => {
             <TabsTrigger value="custom">Custom Code</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="videos" className="bg-white p-4 rounded-md">
-            <h2 className="text-lg font-medium mb-4">Manage Videos</h2>
-            
-            {loading ? (
-              <div className="animate-pulse space-y-4">
-                <div className="h-10 bg-gray-200 rounded"></div>
-                <div className="h-40 bg-gray-200 rounded"></div>
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Thumbnail</TableHead>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Views</TableHead>
-                    <TableHead>Upload Date</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {videos.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8">
-                        No videos found. Click "Upload Video" to add your first video.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    videos.map((video) => (
-                      <TableRow key={video.id}>
-                        <TableCell>
-                          <img 
-                            src={video.thumbnailUrl} 
-                            alt={video.title} 
-                            className="w-24 aspect-video object-cover rounded"
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium">{video.title}</TableCell>
-                        <TableCell>{formatViewCount(video.views)}</TableCell>
-                        <TableCell>{video.uploadDate}</TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleEditClick(video)}
-                            >
-                              <Edit2 className="h-4 w-4 mr-1" /> Edit
-                            </Button>
-                            <Button 
-                              variant="destructive" 
-                              size="sm"
-                              onClick={() => handleDeleteVideo(video.id)}
-                            >
-                              <Trash2 className="h-4 w-4 mr-1" /> Delete
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            )}
+          <TabsContent value="videos">
+            <VideosTab 
+              videos={videos} 
+              loading={loading}
+              onEditClick={handleEditClick}
+              onDeleteVideo={handleDeleteVideo}
+            />
           </TabsContent>
           
-          <TabsContent value="appearance" className="bg-white p-6 rounded-md">
-            <h2 className="text-lg font-medium mb-4">Customize Appearance</h2>
-            
-            <div className="space-y-6">
-              <div className="mb-6">
-                <Label htmlFor="siteName" className="block mb-2">Website Name</Label>
-                <div className="flex items-end space-x-4">
-                  <div className="flex-grow">
-                    <Input
-                      id="siteName"
-                      placeholder="Enter website name"
-                      value={siteName}
-                      onChange={(e) => setSiteName(e.target.value)}
-                      className="mb-2"
-                    />
-                    <p className="text-xs text-gray-500">
-                      This name will be displayed in the header instead of "TubeVibes"
-                    </p>
-                  </div>
-                  <Button onClick={saveSiteName}>
-                    <Type className="h-4 w-4 mr-2" /> Save Name
-                  </Button>
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="logo" className="block mb-2">Site Logo</Label>
-                <div className="flex flex-col space-y-4">
-                  {logoUrl && (
-                    <div className="mb-4">
-                      <p className="text-sm text-gray-500 mb-2">Current Logo:</p>
-                      <img 
-                        src={logoUrl} 
-                        alt="Custom Logo" 
-                        className="h-12 object-contain bg-gray-100 rounded p-2" 
-                      />
-                    </div>
-                  )}
-                  <div className="flex items-center space-x-4">
-                    <Button 
-                      variant="outline" 
-                      onClick={() => document.getElementById('logo-upload')?.click()}
-                    >
-                      <ImageIcon className="h-4 w-4 mr-2" /> Choose Logo
-                    </Button>
-                    <input
-                      id="logo-upload"
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleLogoChange}
-                    />
-                    {logoUrl && (
-                      <Button 
-                        variant="destructive" 
-                        onClick={() => {
-                          setLogoUrl("");
-                          localStorage.removeItem("customLogo");
-                          toast.info("Logo removed");
-                        }}
-                      >
-                        Remove Logo
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
+          <TabsContent value="appearance">
+            <AppearanceTab
+              siteName={siteName}
+              setSiteName={setSiteName}
+              logoUrl={logoUrl}
+              setLogoUrl={setLogoUrl}
+              setLogoFile={setLogoFile}
+              saveSiteName={saveSiteName}
+            />
           </TabsContent>
           
-          <TabsContent value="tracking" className="bg-white p-6 rounded-md">
-            <h2 className="text-lg font-medium mb-4">Tracking & Analytics</h2>
-            
-            <div className="space-y-6">
-              <div>
-                <Label htmlFor="gtm" className="block mb-2">Google Tag Manager ID</Label>
-                <div className="flex items-end space-x-4">
-                  <div className="flex-grow">
-                    <Input
-                      id="gtm"
-                      placeholder="GTM-XXXXXX"
-                      value={gtmId}
-                      onChange={(e) => setGtmId(e.target.value)}
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Enter your GTM container ID (e.g., GTM-XXXXXX)
-                    </p>
-                  </div>
-                  <Button onClick={saveGTM}>Save</Button>
-                </div>
-              </div>
-            </div>
+          <TabsContent value="tracking">
+            <TrackingTab
+              gtmId={gtmId}
+              setGtmId={setGtmId}
+              saveGTM={saveGTM}
+            />
           </TabsContent>
           
-          <TabsContent value="custom" className="bg-white p-6 rounded-md">
-            <h2 className="text-lg font-medium mb-4">Custom Code</h2>
-            
-            <div className="space-y-6">
-              <div>
-                <Label htmlFor="custom-code" className="block mb-2">Custom Head Code</Label>
-                <Textarea
-                  id="custom-code"
-                  placeholder="<!-- Add your custom HTML, CSS, or JavaScript here -->"
-                  className="font-mono text-sm h-48"
-                  value={customHeadCode}
-                  onChange={(e) => setCustomHeadCode(e.target.value)}
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Add custom code that will be injected into the &lt;head&gt; section of your site.
-                </p>
-              </div>
-              <Button onClick={saveCustomCode}>
-                <Code className="h-4 w-4 mr-2" /> Save Custom Code
-              </Button>
-            </div>
+          <TabsContent value="custom">
+            <CustomCodeTab
+              customHeadCode={customHeadCode}
+              setCustomHeadCode={setCustomHeadCode}
+              saveCustomCode={saveCustomCode}
+            />
           </TabsContent>
         </Tabs>
       </main>
