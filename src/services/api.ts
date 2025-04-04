@@ -87,6 +87,12 @@ export interface UploadVideoData {
   thumbnailFile?: File;
 }
 
+export interface UpdateVideoData {
+  title: string;
+  description: string;
+  thumbnailFile?: File;
+}
+
 // API functions
 export async function getVideos(): Promise<Video[]> {
   // In a real app, this would be an actual API call
@@ -141,6 +147,57 @@ export async function uploadVideo(data: UploadVideoData): Promise<Video> {
       toast.success("Video uploaded successfully!");
       resolve(newVideo);
     }, 1500);
+  });
+}
+
+export async function updateVideo(id: string, data: UpdateVideoData): Promise<Video> {
+  // In a real app, this would make an API call
+  // const formData = new FormData();
+  // formData.append('title', data.title);
+  // formData.append('description', data.description);
+  // if (data.thumbnailFile) formData.append('thumbnail', data.thumbnailFile);
+  // return fetch(`${API_BASE_URL}/videos/${id}`, {
+  //   method: 'PUT',
+  //   body: formData
+  // }).then(res => res.json());
+  
+  // For now, simulate an update with a delay
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const videoIndex = MOCK_VIDEOS.findIndex(v => v.id === id);
+      if (videoIndex >= 0) {
+        const updatedVideo = {
+          ...MOCK_VIDEOS[videoIndex],
+          title: data.title,
+          description: data.description,
+          thumbnailUrl: data.thumbnailFile 
+            ? URL.createObjectURL(data.thumbnailFile)
+            : MOCK_VIDEOS[videoIndex].thumbnailUrl,
+        };
+        MOCK_VIDEOS[videoIndex] = updatedVideo;
+        resolve(updatedVideo);
+      } else {
+        throw new Error("Video not found");
+      }
+    }, 800);
+  });
+}
+
+export async function deleteVideo(id: string): Promise<void> {
+  // In a real app, this would make an API call
+  // return fetch(`${API_BASE_URL}/videos/${id}`, {
+  //   method: 'DELETE'
+  // }).then(() => {});
+  
+  // For now, simulate deletion with a delay
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const videoIndex = MOCK_VIDEOS.findIndex(v => v.id === id);
+      if (videoIndex >= 0) {
+        MOCK_VIDEOS.splice(videoIndex, 1);
+      }
+      resolve();
+    }, 500);
   });
 }
 

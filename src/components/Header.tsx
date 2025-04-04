@@ -2,9 +2,10 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Upload, Menu, Bell, User } from "lucide-react";
+import { Search, Upload, Menu, Bell, User, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Link } from "react-router-dom";
 
 interface HeaderProps {
   onUploadClick: () => void;
@@ -12,6 +13,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onUploadClick }) => {
   const isMobile = useIsMobile();
+  const customLogo = localStorage.getItem("customLogo");
 
   return (
     <header className="bg-white sticky top-0 z-10 shadow-sm">
@@ -22,11 +24,19 @@ const Header: React.FC<HeaderProps> = ({ onUploadClick }) => {
               <Menu size={20} />
             </Button>
           )}
-          <div className="flex items-center">
-            <div className="text-2xl font-bold text-youtube-red">
-              Tube<span className="font-normal">Vibes</span>
-            </div>
-          </div>
+          <Link to="/" className="flex items-center">
+            {customLogo ? (
+              <img 
+                src={customLogo} 
+                alt="TubeVibes" 
+                className="h-8 object-contain mr-2" 
+              />
+            ) : (
+              <div className="text-2xl font-bold text-youtube-red">
+                Tube<span className="font-normal">Vibes</span>
+              </div>
+            )}
+          </Link>
         </div>
 
         <div className={cn("flex-grow max-w-3xl mx-4", isMobile && "hidden")}>
@@ -68,6 +78,11 @@ const Header: React.FC<HeaderProps> = ({ onUploadClick }) => {
               </>
             )}
           </Button>
+          <Link to="/admin">
+            <Button variant="ghost" size="icon">
+              <Settings size={20} />
+            </Button>
+          </Link>
           {!isMobile && (
             <>
               <Button variant="ghost" size="icon">
