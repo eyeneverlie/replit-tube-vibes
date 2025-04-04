@@ -10,11 +10,12 @@ import { Video, getVideos } from "@/services/api";
 import UploadModal from "@/components/UploadModal";
 import EditVideoModal from "@/components/EditVideoModal";
 
-// Import our new tab components
+// Import our tab components
 import VideosTab from "@/components/admin/VideosTab";
 import AppearanceTab from "@/components/admin/AppearanceTab";
 import TrackingTab from "@/components/admin/TrackingTab";
 import CustomCodeTab from "@/components/admin/CustomCodeTab";
+import AdminAuth from "@/components/admin/AdminAuth";
 
 const Admin = () => {
   const [videos, setVideos] = useState<Video[]>([]);
@@ -35,10 +36,18 @@ const Admin = () => {
   const [gtmId, setGtmId] = useState<string>(
     localStorage.getItem("gtmId") || ""
   );
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const { toast: uiToast } = useToast();
 
   useEffect(() => {
-    loadVideos();
+    // Check if user is already authenticated
+    const adminAuth = localStorage.getItem("adminAuthenticated") || 
+                      sessionStorage.getItem("adminAuthenticated");
+    
+    if (adminAuth === "true") {
+      setIsAuthenticated(true);
+      loadVideos();
+    }
   }, []);
 
   const loadVideos = async () => {
@@ -109,6 +118,17 @@ const Admin = () => {
     toast.success("Custom code saved");
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("adminAuthenticated");
+    sessionStorage.removeItem("adminAuthenticated");
+    setIsAuthenticated(false);
+    toast.info("Logged out successfully");
+  };
+
+  if (!isAuthenticated) {
+    return <AdminAuth onAuthenticated={() => setIsAuthenticated(true)} />;
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-youtube-lightGray">
       <Header onUploadClick={() => setIsUploadModalOpen(true)} />
@@ -116,12 +136,20 @@ const Admin = () => {
       <main className="flex-grow container mx-auto px-4 py-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Admin Panel</h1>
-          <Button 
-            onClick={() => setIsUploadModalOpen(true)} 
-            className="upload-btn"
-          >
-            <Upload className="mr-2 h-4 w-4" /> Upload Video
-          </Button>
+          <div className="flex space-x-3">
+            <Button 
+              onClick={() => setIsUploadModalOpen(true)} 
+              className="upload-btn"
+            >
+              <Upload className="mr-2 h-4 w-4" /> Upload Video
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={handleLogout}
+            >
+              Logout
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="videos">
