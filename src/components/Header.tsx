@@ -14,6 +14,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ onUploadClick }) => {
   const isMobile = useIsMobile();
   const customLogo = localStorage.getItem("customLogo");
+  const siteName = localStorage.getItem("siteName") || "TubeVibes";
 
   return (
     <header className="bg-white sticky top-0 z-10 shadow-sm">
@@ -28,12 +29,18 @@ const Header: React.FC<HeaderProps> = ({ onUploadClick }) => {
             {customLogo ? (
               <img 
                 src={customLogo} 
-                alt="TubeVibes" 
+                alt={siteName} 
                 className="h-8 object-contain mr-2" 
               />
             ) : (
               <div className="text-2xl font-bold text-youtube-red">
-                Tube<span className="font-normal">Vibes</span>
+                {siteName === "TubeVibes" ? (
+                  <>
+                    Tube<span className="font-normal">Vibes</span>
+                  </>
+                ) : (
+                  siteName
+                )}
               </div>
             )}
           </Link>

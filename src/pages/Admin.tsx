@@ -23,6 +23,7 @@ import {
   Image as ImageIcon,
   Code,
   Tag,
+  Type,
 } from "lucide-react";
 import { Video, getVideos, uploadVideo, formatViewCount } from "@/services/api";
 import UploadModal from "@/components/UploadModal";
@@ -38,6 +39,9 @@ const Admin = () => {
     localStorage.getItem("customLogo") || ""
   );
   const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [siteName, setSiteName] = useState<string>(
+    localStorage.getItem("siteName") || "TubeVibes"
+  );
   const [customHeadCode, setCustomHeadCode] = useState<string>(
     localStorage.getItem("customHeadCode") || ""
   );
@@ -106,6 +110,11 @@ const Admin = () => {
       localStorage.setItem("customLogo", objectUrl);
       toast.success("Logo updated successfully");
     }
+  };
+
+  const saveSiteName = () => {
+    localStorage.setItem("siteName", siteName);
+    toast.success("Website name saved successfully");
   };
 
   const saveGTM = () => {
@@ -216,6 +225,27 @@ const Admin = () => {
             <h2 className="text-lg font-medium mb-4">Customize Appearance</h2>
             
             <div className="space-y-6">
+              <div className="mb-6">
+                <Label htmlFor="siteName" className="block mb-2">Website Name</Label>
+                <div className="flex items-end space-x-4">
+                  <div className="flex-grow">
+                    <Input
+                      id="siteName"
+                      placeholder="Enter website name"
+                      value={siteName}
+                      onChange={(e) => setSiteName(e.target.value)}
+                      className="mb-2"
+                    />
+                    <p className="text-xs text-gray-500">
+                      This name will be displayed in the header instead of "TubeVibes"
+                    </p>
+                  </div>
+                  <Button onClick={saveSiteName}>
+                    <Type className="h-4 w-4 mr-2" /> Save Name
+                  </Button>
+                </div>
+              </div>
+
               <div>
                 <Label htmlFor="logo" className="block mb-2">Site Logo</Label>
                 <div className="flex flex-col space-y-4">
